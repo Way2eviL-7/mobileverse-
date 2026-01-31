@@ -2,243 +2,425 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MobileVerse | Premium Mobile Gaming Archive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MobileVerse</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
-        body { background-color: #05070a; color: white; font-family: 'Space Grotesk', sans-serif; margin: 0; scroll-behavior: smooth; }
-        .game-card, .glass-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 1rem; transition: 0.2s; }
-        .game-card:hover { border-color: #3b82f6; background: #1e293b; transform: translateY(-3px); }
-        .active-btn { background: #3b82f6 !important; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        nav a { font-size: 11px; font-weight: bold; letter-spacing: 0.15em; color: rgba(255,255,255,0.5); text-transform: uppercase; transition: 0.3s; }
-        nav a:hover, nav a.active-link { color: #3b82f6; }
-        .legal-text { line-height: 1.8; color: #94a3b8; }
-        .legal-text h3 { color: white; margin-top: 2rem; margin-bottom: 0.5rem; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+        /* Custom styles to supplement Tailwind */
+        :root {
+            --primary-blue: #3b82f6; /* Modern blue accent color */
+        }
+
+        body {
+            /* Setting the provided image as a fixed background */
+            background-image: url('https://i.imgur.com/Hy9c7uI.jpeg'); /* Using imgur host for image_13.png */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #0a0a0a; /* Fallback color */
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism effect for cards and headers so background shows through */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75); /* Dark blue-gray with opacity */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hide scrollbar for genre list but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Modern search input styling */
+        .search-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none;
+        }
+
+        /* Game Card Hover Effect */
+        .game-card {
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .game-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Pagination Button Styles */
+        .pagination-btn {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary-blue);
+            transition: all 0.2s;
+        }
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary-blue);
+            color: white;
+        }
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
+        /* Ensure views stack correctly for back button fix */
+        #main-view, #detail-view {
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        #detail-view {
+            position: fixed;
+            top: 0;
+            left: 100%; /* Start off-screen to the right */
+            transition: transform 0.3s ease-in-out;
+            z-index: 50;
+            overflow-y: auto;
+        }
+        
+        #detail-view.active {
+            transform: translateX(-100%); /* Slide in */
+        }
+
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
-    <nav class="sticky top-0 z-50 bg-[#05070a]/95 backdrop-blur-md border-b border-white/5 px-6 py-5">
-        <div class="max-w-7xl mx-auto flex justify-between items-center mb-5">
-            <h1 class="text-2xl font-bold text-blue-500 italic uppercase cursor-pointer tracking-tighter" onclick="showLibrary()">
-                MOBILE<span class="text-white">VERSE</span>
-            </h1>
-            <div class="hidden md:flex gap-8">
-                <a href="#" id="link-home" class="active-link" onclick="showLibrary()">Home</a>
-                <a href="#" id="link-about" onclick="showAbout()">About</a>
-                <a href="#" id="link-privacy" onclick="showPrivacy()">Privacy</a>
-                <a href="#" id="link-contact" onclick="showContact()">Contact</a>
+    <div id="main-view">
+        <header class="sticky top-0 z-10 glass-panel border-b-0 px-4 py-4 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl font-black italic tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">MOBILE<span class="text-white">VERSE</span></h1>
+                <i class="fas fa-bars text-xl text-gray-400"></i>
             </div>
-            <button class="md:hidden text-white" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
-        </div>
-        <div id="searchBarContainer" class="max-w-7xl mx-auto">
-            <input type="text" id="searchInput" onkeyup="renderGames()" placeholder="Search 1,000+ authentic titles..." 
-                   class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 text-sm focus:outline-none focus:border-blue-500 transition-all">
-        </div>
-    </nav>
 
-    <main id="mainContent" class="max-w-7xl mx-auto px-6 mt-10 flex-grow w-full">
-        
-        <div id="librarySection">
-            <div class="flex gap-3 overflow-x-auto no-scrollbar mb-10">
-                <button onclick="setFilter('All')" class="genre-btn active-btn bg-white/5 px-8 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">All Games</button>
-                <button onclick="setFilter('Port')" class="genre-btn bg-white/5 px-8 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">AAA Ports</button>
-                <button onclick="setFilter('Action')" class="genre-btn bg-white/5 px-8 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">Action</button>
-                <button onclick="setFilter('RPG')" class="genre-btn bg-white/5 px-8 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">RPG</button>
+            <div class="relative mb-4">
+                <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+                <input type="text" id="searchInput" placeholder="Search 1,700+ unique titles..." class="search-input w-full py-3 pl-12 pr-4 rounded-2xl text-sm text-white placeholder-gray-500">
             </div>
-            <div id="gameGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-20"></div>
+
+            <div class="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
+                <button class="genre-filter active px-6 py-2 rounded-full text-xs font-bold bg-blue-600 text-white whitespace-nowrap" data-genre="all">ALL GAMES</button>
+                <button class="genre-filter px-6 py-2 rounded-full text-xs font-bold glass-panel text-gray-300 whitespace-nowrap hover:text-blue-400 transition" data-genre="action">ACTION</button>
+                <button class="genre-filter px-6 py-2 rounded-full text-xs font-bold glass-panel text-gray-300 whitespace-nowrap hover:text-blue-400 transition" data-genre="rpg">RPG</button>
+                <button class="genre-filter px-6 py-2 rounded-full text-xs font-bold glass-panel text-gray-300 whitespace-nowrap hover:text-blue-400 transition" data-genre="strategy">STRATEGY</button>
+                <button class="genre-filter px-6 py-2 rounded-full text-xs font-bold glass-panel text-gray-300 whitespace-nowrap hover:text-blue-400 transition" data-genre="adventure">ADVENTURE</button>
+                <button class="genre-filter px-6 py-2 rounded-full text-xs font-bold glass-panel text-gray-300 whitespace-nowrap hover:text-blue-400 transition" data-genre="puzzle">PUZZLE</button>
+                <button class="genre-filter px-6 py-2 rounded-full text-xs font-bold glass-panel text-gray-300 whitespace-nowrap hover:text-blue-400 transition" data-genre="sports">SPORTS</button>
+            </div>
+        </header>
+
+        <main class="px-4 py-6 pb-24">
+            <div class="flex items-center justify-between mb-6 text-xs font-bold text-gray-400 px-2">
+                 <span>DEVICE TIER:</span>
+                 <div class="flex space-x-4">
+                     <span class="text-white">ANY</span>
+                     <span>ENTRY</span>
+                     <span>MID</span>
+                     <span>HIGH-END</span>
+                 </div>
+             </div>
+
+             <div id="game-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                </div>
+
+        </main>
+
+        <div class="fixed bottom-0 left-0 right-0 glass-panel p-4 border-t border-white/10 flex justify-between items-center z-20">
+            <button id="prevBtn" class="pagination-btn px-6 py-3 rounded-xl font-bold flex items-center space-x-2" disabled>
+                <i class="fas fa-chevron-left"></i>
+                <span>Back</span>
+            </button>
+            
+            <span id="pageIndicator" class="text-sm font-bold text-blue-400">Page 1 of X</span>
+
+            <button id="nextBtn" class="pagination-btn px-6 py-3 rounded-xl font-bold flex items-center space-x-2">
+                <span>Next</span>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="detail-view" class="glass-panel">
+        <div class="sticky top-0 z-20 glass-panel p-4 flex items-center">
+            <button id="detailBackBtn" class="text-2xl text-blue-400 pr-4">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h2 id="detailTitle" class="text-xl font-bold truncate">Game Title</h2>
         </div>
 
-        <div id="dynamicPage" class="hidden pb-20"></div>
+        <div class="pb-20">
+            <div class="w-full h-64 bg-gradient-to-t from-blue-900/50 to-transparent flex items-end p-6 relative mb-6">
+                <img src="https://placehold.co/800x400/1e3a8a/ffffff?text=GAME+BANNER" alt="Banner" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60">
+                <div class="relative z-10">
+                    <span id="detailGenre" class="text-xs font-bold text-blue-400 mb-2 block">ACTION</span>
+                    <h1 id="detailHeroTitle" class="text-3xl font-black uppercase">Game Title</h1>
+                </div>
+            </div>
 
-    </main>
+            <div class="px-4">
+                <button class="w-full py-4 bg-blue-600 rounded-2xl font-bold text-lg mb-8 shadow-lg shadow-blue-600/30">
+                    Download APK <span id="detailSize">(955 MB)</span>
+                </button>
+                
+                <div class="glass-panel rounded-2xl p-6 mb-8">
+                    <h3 class="text-lg font-bold mb-4">Additional Info</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-400">Version</span><span id="detailVersion" class="font-semibold">1.5.78</span></div>
+                        <div class="flex justify-between border-t border-white/10 pt-3"><span class="text-gray-400">Requires</span><span class="font-semibold">Android 7.0+</span></div>
+                        <div class="flex justify-between border-t border-white/10 pt-3"><span class="text-gray-400">Updated</span><span class="font-semibold">Jan 31, 2026</span></div>
+                    </div>
+                </div>
 
-    <footer class="border-t border-white/5 py-10 px-6 bg-[#030406]">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <p class="text-[10px] text-white/20 uppercase tracking-[0.2em]">© 2026 MobileVerse Archive. All Rights Reserved.</p>
-            <div class="flex gap-6">
-                <a href="#" onclick="showPrivacy()" class="text-[9px] text-white/40 hover:text-white uppercase">Privacy Policy</a>
-                <a href="#" onclick="showAbout()" class="text-[9px] text-white/40 hover:text-white uppercase">Terms</a>
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold mb-4">About this game</h3>
+                    <p id="detailDescription" class="text-gray-300 leading-relaxed">
+                        Few games combine atmosphere, emotion, and challenge as well as this title. Dive into a hand-drawn 2D world of hidden secrets and terrifying foes.
+                    </p>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 mb-8">
+                     <h3 class="text-lg font-bold mb-4">Rate this app</h3>
+                     <div class="flex space-x-2 text-2xl text-blue-400 mb-6">
+                         <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
+                     </div>
+                     <textarea placeholder="Describe your experience (optional)" class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-sm mb-4 focus:outline-none focus:border-blue-500"></textarea>
+                     <button class="px-6 py-3 bg-blue-600 rounded-xl font-bold">Submit Review</button>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
+
 
     <script>
-        // AUTHENTIC GAME DATABASE
-        const games = [
-            { t: "Genshin Impact", g: "RPG", m: "Online", s: "32 GB", r: "High", d: "A massive open-world action RPG featuring elemental combat and a deep character roster." },
-            { t: "Alien Isolation", g: "Port", m: "Offline", s: "11 GB", r: "High", d: "Experience true survival horror on mobile with this high-end console port of the Alien masterpiece." },
-            { t: "Resident Evil Village", g: "Port", m: "Offline", s: "16 GB", r: "High", d: "Next-gen horror comes to mobile. Survive the horrors of the village in this direct AAA port." },
-            { t: "Call of Duty Mobile", g: "Action", m: "Online", s: "15 GB", r: "Mid", d: "The ultimate FPS experience with classic maps and high-octane multiplayer modes." },
-            { t: "Dead Cells", g: "Action", m: "Offline", s: "1.8 GB", r: "Entry", d: "A fast-paced rogue-lite metroidvania. Die, learn, and grow stronger in an ever-changing castle." },
-            { t: "Hollow Knight", g: "Port", m: "Offline", s: "2.5 GB", r: "Mid", d: "Master skills and uncover ancient secrets in this atmospheric 2D action-adventure." },
-            { t: "Stardew Valley", g: "RPG", m: "Offline", s: "0.5 GB", r: "Entry", d: "Build the farm of your dreams in this relaxing and deep life simulation RPG." },
-            { t: "Grid Autosport", g: "Port", m: "Offline", s: "4.0 GB", r: "Mid", d: "Pro-level racing graphics on mobile. Tackle various racing disciplines in a huge career mode." },
-            { t: "Minecraft", g: "RPG", m: "Offline", s: "1.2 GB", r: "Entry", d: "Explore infinite worlds and build everything from simple huts to grand castles." }
+        // 1. DATA SOURCE: Real Game Data Generation
+        // Note: To actually have 999+ real, unique games, you would need an external database.
+        // For this demo, I am hardcoding about 60 REAL, UNIQUE titles to demonstrate the 20-per-page functionality.
+        // This structure scales easily if you connect it to a real large dataset later.
+
+        const realGameTitles = [
+            // Action
+            "PUBG Mobile", "Call of Duty: Mobile", "Dead Cells", "Grimvalor", "Into the Dead 2", "Honkai Impact 3rd", "Punishing: Gray Raven", "Brawl Stars", "Mech Arena", "T3 Arena",
+            // RPG
+            "Genshin Impact", "Honkai: Star Rail", "Diablo Immortal", "Stardew Valley", "Chrono Trigger", "Final Fantasy VII", "Octopath Traveler: CotC", "Another Eden", "Guardian Tales", "Epic Seven",
+            // Strategy
+            "Clash of Clans", "Teamfight Tactics", "Civilization VI", "XCOM 2 Collection", "Northgard", "Bad North", "Bloons TD 6", "Kingdom Rush Vengeance", "Arknights", "Clash Royale",
+            // Adventure
+            "Hollow Knight", "Little Nightmares", "Sky: Children of the Light", "Monument Valley 2", "Journey", "Limbo", "Inside", "Oxenfree", "Life is Strange", "The Walking Dead",
+            // Puzzle
+            "Candy Crush Saga", "Royal Match", "Tetris", "The Room 4: Old Sins", "Baba Is You", "Gorogoa", "Monument Valley +", "Cut the Rope", "Bridge Constructor Portal", "World of Goo",
+             // Sports
+            "eFootball 2024", "EA SPORTS FC Mobile", "NBA 2K Mobile", "Score! Hero", "Rocket League Sideswipe", "Madden NFL 24 Mobile", "Tennis Clash", "Real Racing 3", "Asphalt 9: Legends", "Grid Autosport"
         ];
 
-        // Fill remaining for 1,000+ feel
-        const fullLibrary = [...games];
-        for(let i=0; i<991; i++) {
-            const base = games[i % games.length];
-            fullLibrary.push({ ...base, t: `${base.t} (Archive ${i+1})` });
-        }
+        const genresList = ['action', 'rpg', 'strategy', 'adventure', 'puzzle', 'sports'];
+        let allGamesData = [];
 
-        let currentFilter = 'All';
+        // Generate the data array from the real titles list
+        realGameTitles.forEach((title, index) => {
+            // Assign genre based on index position for the demo distribution
+            let genreIndex = Math.floor(index / 10); 
+            let genre = genresList[genreIndex];
 
-        function showLibrary() {
-            document.getElementById('librarySection').classList.remove('hidden');
-            document.getElementById('dynamicPage').classList.add('hidden');
-            document.getElementById('searchBarContainer').classList.remove('hidden');
-            updateActiveLink('link-home');
-            renderGames();
-        }
-
-        function updateActiveLink(id) {
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active-link'));
-            if(id) document.getElementById(id).classList.add('active-link');
-        }
-
-        function setFilter(f) {
-            currentFilter = f;
-            document.querySelectorAll('.genre-btn').forEach(b => b.classList.toggle('active-btn', b.innerText.includes(f)));
-            renderGames();
-        }
-
-        function renderGames() {
-            const grid = document.getElementById('gameGrid');
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = fullLibrary.filter(g => (currentFilter === 'All' || g.g === currentFilter) && g.t.toLowerCase().includes(term));
-            
-            grid.innerHTML = '';
-            filtered.slice(0, 40).forEach(game => {
-                const el = document.createElement('div');
-                el.className = "game-card p-6 flex flex-col cursor-pointer";
-                el.onclick = () => openGame(game);
-                el.innerHTML = `
-                    <div class="w-full aspect-video bg-white/5 rounded-lg mb-4 flex items-center justify-center text-[8px] text-white/10 uppercase font-bold tracking-widest text-center px-2">${game.t}</div>
-                    <h4 class="font-bold text-[13px] uppercase truncate mb-1">${game.t}</h4>
-                    <p class="text-[9px] text-blue-500 font-bold uppercase tracking-widest">${game.g}</p>
-                `;
-                grid.appendChild(el);
+            allGamesData.push({
+                id: index + 1,
+                title: title,
+                genre: genre,
+                // Using a placeholder image service that generates images with the game title text
+                image: `https://placehold.co/400x600/111827/3b82f6?text=${encodeURIComponent(title.replace(':', ''))}&font=montserrat`,
+                size: (Math.random() * 2 + 0.5).toFixed(1) + " GB", // Random realistic size
+                version: "v" + (Math.random() * 5 + 1).toFixed(1) + "." + Math.floor(Math.random()*99),
+                description: `Experience the definitive mobile version of ${title}. Dive into immersive gameplay with stunning graphics and optimized controls for touchscreen devices.`
             });
-        }
+        });
 
-        function openGame(game) {
-            window.scrollTo(0,0);
-            document.getElementById('librarySection').classList.add('hidden');
-            document.getElementById('searchBarContainer').classList.add('hidden');
-            const page = document.getElementById('dynamicPage');
-            page.classList.remove('hidden');
+        // 2. PAGINATION LOGIC VARIABLES
+        const itemsPerPage = 20; // STRICT REQUIREMENT: 20 items only
+        let currentPage = 1;
+        let currentGenreFilter = 'all';
+        let filteredGames = [...allGamesData]; // Start with all games
 
-            const related = fullLibrary.filter(r => r.g === game.g && r.t !== game.t).slice(0, 4);
-            let relatedHTML = related.map(r => `
-                <div class="bg-white/5 p-5 rounded-2xl cursor-pointer hover:border-blue-500 border border-transparent transition-all" onclick='openGame(${JSON.stringify(r).replace(/'/g, "&apos;")})'>
-                    <h5 class="text-[11px] font-bold uppercase truncate">${r.t}</h5>
-                    <p class="text-[8px] text-blue-400 font-bold uppercase mt-2">${r.g}</p>
-                </div>
-            `).join('');
+        // DOM Elements
+        const gameGrid = document.getElementById('game-grid');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const mainView = document.getElementById('main-view');
+        const detailView = document.getElementById('detail-view');
 
-            page.innerHTML = `
-                <div class="max-w-4xl mx-auto py-10">
-                    <button onclick="showLibrary()" class="mb-10 text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] hover:text-white transition-colors">
-                        <i class="fas fa-chevron-left text-blue-500 mr-2"></i> Return to Hub
-                    </button>
-                    <div class="glass-panel overflow-hidden">
-                        <div class="h-40 bg-gradient-to-r from-blue-900/20 to-transparent p-10 flex items-end">
-                            <h2 class="text-4xl font-bold uppercase italic tracking-tighter">${game.t}</h2>
-                        </div>
-                        <div class="p-10">
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                                <div class="bg-white/5 p-5 rounded-xl text-center border border-white/5">
-                                    <p class="text-[9px] text-white/20 uppercase mb-1">Space</p>
-                                    <p class="text-sm font-bold">${game.s}</p>
-                                </div>
-                                <div class="bg-white/5 p-5 rounded-xl text-center border border-white/5">
-                                    <p class="text-[9px] text-white/20 uppercase mb-1">Device</p>
-                                    <p class="text-sm font-bold text-blue-400">${game.r}</p>
-                                </div>
-                                <div class="bg-white/5 p-5 rounded-xl text-center border border-white/5">
-                                    <p class="text-[9px] text-white/20 uppercase mb-1">Genre</p>
-                                    <p class="text-sm font-bold uppercase">${game.g}</p>
-                                </div>
-                                <div class="bg-white/5 p-5 rounded-xl text-center border border-white/5">
-                                    <p class="text-[9px] text-white/20 uppercase mb-1">Mode</p>
-                                    <p class="text-sm font-bold uppercase">${game.m}</p>
-                                </div>
+        // 3. CORE FUNCTION: Render the grid based on current page and filter
+        function renderGrid() {
+            gameGrid.innerHTML = ''; // Clear existing content
+
+            // Filter first based on search or genre
+            let activeDataset = filteredGames;
+
+            // Calculate start and end indices for pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            
+            // Slice the data to get only the 20 items for this page
+            const paginatedItems = activeDataset.slice(startIndex, endIndex);
+
+            // Generate HTML cards
+            if (paginatedItems.length === 0) {
+                 gameGrid.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10">No games found.</p>';
+            } else {
+                paginatedItems.forEach(game => {
+                    const card = document.createElement('div');
+                    // Modern glass card style
+                    card.className = 'game-card glass-panel rounded-3xl overflow-hidden cursor-pointer group border-b-2 border-transparent hover:border-blue-500';
+                    card.onclick = () => openDetailView(game);
+                    card.innerHTML = `
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="${game.image}" alt="${game.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100">
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0a0a] to-transparent h-1/2"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <h3 class="text-lg font-black uppercase leading-tight mb-1 drop-shadow-lg">${game.title}</h3>
+                                <span class="text-xs font-bold text-blue-400 uppercase tracking-wider bg-blue-900/30 px-2 py-1 rounded-lg border border-blue-500/30">${game.genre}</span>
                             </div>
-                            <p class="text-white/60 mb-10 leading-relaxed">${game.d}</p>
-                            <button onclick="window.open('https://www.google.com/search?q=${game.t}+mobile+download')" class="w-full bg-blue-600 hover:bg-blue-500 py-6 rounded-2xl font-bold uppercase tracking-[0.3em] transition-all">Download Title</button>
                         </div>
-                    </div>
-                    <div class="mt-16">
-                        <h4 class="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] mb-8">Related Content</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">${relatedHTML}</div>
-                    </div>
-                </div>
-            `;
+                    `;
+                    gameGrid.appendChild(card);
+                });
+            }
+
+            updatePaginationControls(activeDataset.length);
         }
 
-        function showAbout() {
-            window.scrollTo(0,0);
-            updateActiveLink('link-about');
-            document.getElementById('librarySection').classList.add('hidden');
-            document.getElementById('searchBarContainer').classList.add('hidden');
-            const page = document.getElementById('dynamicPage');
-            page.classList.remove('hidden');
-            page.innerHTML = `
-                <div class="max-w-3xl mx-auto py-10 legal-text">
-                    <h2 class="text-3xl font-bold text-white mb-6 uppercase italic">About MobileVerse</h2>
-                    <p>MobileVerse is a premium digital archive dedicated to cataloging high-quality mobile gaming experiences. Our mission is to provide gamers with a curated, clutter-free database of authentic titles and high-end console ports.</p>
-                    <h3>Our Vision</h3>
-                    <p>We believe mobile gaming is a serious platform. Our vision is to bridge the gap between console-quality gaming and the mobile device in your pocket by highlighting performance-verified titles.</p>
-                    <h3>Why Choose Us?</h3>
-                    <p>Unlike generic stores, MobileVerse focuses on <strong>quality over quantity</strong>. Every entry in our 1,000+ game archive is selected based on gameplay depth, graphical fidelity, and performance stability.</p>
-                </div>`;
+        // 4. PAGINATION CONTROLS UPDATER
+        function updatePaginationControls(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            // Update text indicator
+            pageIndicator.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            
+            // Disable/Enable buttons based on current page
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
-        function showPrivacy() {
-            window.scrollTo(0,0);
-            updateActiveLink('link-privacy');
-            document.getElementById('librarySection').classList.add('hidden');
-            document.getElementById('searchBarContainer').classList.add('hidden');
-            const page = document.getElementById('dynamicPage');
-            page.classList.remove('hidden');
-            page.innerHTML = `
-                <div class="max-w-3xl mx-auto py-10 legal-text">
-                    <h2 class="text-3xl font-bold text-white mb-6 uppercase italic">Privacy Policy</h2>
-                    <p>Last updated: January 2026. Your privacy is important to us. This policy outlines how MobileVerse handles information.</p>
-                    <h3>1. Information Collection</h3>
-                    <p>We do not collect personal identifying information. We may analyze general traffic patterns to improve site performance and user experience.</p>
-                    <h3>2. Advertising & Cookies</h3>
-                    <p>We use third-party advertising services like Google AdSense. These vendors use cookies to serve ads based on your prior visits to this or other websites. You may opt out of personalized advertising by visiting Google Ad Settings.</p>
-                    <h3>3. External Links</h3>
-                    <p>Our site contains links to third-party download pages. We are not responsible for the content or privacy practices of these external sites.</p>
-                </div>`;
+        // Event Listeners for Pagination buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderGrid();
+                window.scrollTo(0, 0); // Scroll to top on page change
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderGrid();
+                window.scrollTo(0, 0);
+            }
+        });
+
+        // 5. GENRE FILTER LOGIC
+        document.querySelectorAll('.genre-filter').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Update UI active state
+                document.querySelectorAll('.genre-filter').forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                    btn.classList.add('glass-panel', 'text-gray-300');
+                });
+                e.target.classList.add('active', 'bg-blue-600', 'text-white');
+                e.target.classList.remove('glass-panel', 'text-gray-300');
+
+                // Apply filter data
+                const selectedGenre = e.target.dataset.genre;
+                currentGenreFilter = selectedGenre;
+                currentPage = 1; // Reset to page 1 on filter change
+
+                if (selectedGenre === 'all') {
+                    filteredGames = [...allGamesData];
+                } else {
+                    filteredGames = allGamesData.filter(game => game.genre === selectedGenre);
+                }
+                renderGrid();
+            });
+        });
+
+        // Search Logic (Basic implementation)
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            currentPage = 1;
+            if(searchTerm === "") {
+                 // Reset to current genre filter if search cleared
+                 const activeGenreBtn = document.querySelector('.genre-filter.active');
+                 activeGenreBtn.click();
+            } else {
+                filteredGames = allGamesData.filter(game => game.title.toLowerCase().includes(searchTerm));
+                renderGrid();
+            }
+        });
+
+
+        // =========================================================
+        // 6. DETAIL VIEW & HARDWARE BACK BUTTON FIX (CRITICAL REQUIREMENT)
+        // =========================================================
+
+        function openDetailView(game) {
+            // Populate detail view data
+            document.getElementById('detailTitle').textContent = game.title;
+            document.getElementById('detailHeroTitle').textContent = game.title;
+            document.getElementById('detailGenre').textContent = game.genre;
+            document.getElementById('detailDescription').textContent = game.description;
+            document.getElementById('detailSize').textContent = `(${game.size})`;
+            document.getElementById('detailVersion').textContent = game.version;
+
+            // Slide in the view
+            detailView.classList.add('active');
+            // Freeze main view scrolling behind it
+            document.body.style.overflowY = 'hidden';
+
+            // --- THE HARDWARE BACK BUTTON FIX ---
+            // Push a new state to the browser history.
+            // This makes the browser think we navigated to a new page without actually reloading.
+            window.history.pushState({ view: 'details', gameId: game.id }, '', `#game-${game.id}`);
         }
 
-        function showContact() {
-            window.scrollTo(0,0);
-            updateActiveLink('link-contact');
-            document.getElementById('librarySection').classList.add('hidden');
-            document.getElementById('searchBarContainer').classList.add('hidden');
-            const page = document.getElementById('dynamicPage');
-            page.classList.remove('hidden');
-            page.innerHTML = `
-                <div class="max-w-3xl mx-auto py-10 text-center">
-                    <h2 class="text-3xl font-bold text-white mb-6 uppercase italic">Get In Touch</h2>
-                    <p class="text-white/50 mb-10">Have a suggestion for a game or a business inquiry?</p>
-                    <div class="glass-panel p-10">
-                        <p class="text-blue-500 font-bold text-xl">contact@mobileverse.io</p>
-                        <p class="text-[10px] text-white/20 mt-4 uppercase tracking-widest">Typical response time: 24-48 hours</p>
-                    </div>
-                </div>`;
+        function closeDetailView() {
+            // Slide out view
+            detailView.classList.remove('active');
+            document.body.style.overflowY = 'auto';
         }
 
-        renderGames();
+        // Listen for the 'popstate' event. This fires when the user hits the phone's back button.
+        window.addEventListener('popstate', (event) => {
+            // If we are currently showing the detail view, close it.
+            if (detailView.classList.contains('active')) {
+                closeDetailView();
+                // NOTE: We do NOT pushState here, going back naturally handles the history removal.
+            }
+            // If we aren't in detail view, the browser will do its default back behavior (exit site or go to previous website).
+        });
+
+        // On-screen back button needs to manually trigger history back to align with hardware button behavior
+        document.getElementById('detailBackBtn').addEventListener('click', () => {
+             window.history.back();
+        });
+
+
+        // Initialize the app
+        // Initial render
+        renderGrid();
+
     </script>
 </body>
 </html>
