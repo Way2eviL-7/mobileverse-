@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; touch-action: none; }
+        #ui { position: absolute; top: env(safe-area-inset-top, 20px); left: 20px; color: #00ffcc; pointer-events: none; z-index: 10; }
+        #btns { position: absolute; bottom: 40px; right: 20px; display: flex; gap: 10px; }
+        .game-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(0, 255, 204, 0.2); border: 2px solid #00ffcc; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; pointer-events: auto; }
+        #hp-bar { width: 150px; height: 10px; border: 1px solid #fff; margin-top: 5px; background: #222; }
+        #hp-fill { height: 100%; background: #ff3333; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div>RANK: <span id="rank">1</span></div>
+        <div id="hp-bar"><div id="hp-fill"></div></div>
+        <div id="status">Hold Screen to Move | Use DASH to Dodge</div>
+    </div>
+    <div id="btns">
+        <div class="game-btn" id="dash-btn">DASH</div>
+        <div class="game-btn" id="atk-btn">GU</div>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        const state = { hp: 100, rank: 1, isMoving: false, speed: 0.12 };
+        const slashes = [];
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020502);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const player = new THREE.Group();
+        player.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1), new THREE.MeshStandardMaterial({ color: 0xffffff })));
+        scene.add(player);
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+        // --- SPACE PATH DASH ---
+        document.getElementById('dash-btn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const dashDistance = 5;
+            player.translateZ(dashDistance);
+            // Visual Effect
+            const ghost = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1), new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.5 }));
+            ghost.position.copy(player.position);
+            scene.add(ghost);
+            setTimeout(() => scene.remove(ghost), 200);
+        });
+
+        // --- ATTACK ---
+        document.getElementById('atk-btn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const s = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.1, 8, 16, Math.PI), new THREE.MeshBasicMaterial({ color: 0x00ffff }));
+            s.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
+            s.rotation.copy(player.rotation);
+            scene.add(s);
+            slashes.push(s);
+        });
+
+        window.addEventListener('touchstart', (e) => { if(e.target.className !== 'game-btn') state.isMoving = true; });
+        window.addEventListener('touchend', () => state.isMoving = false);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (state.isMoving) player.translateZ(state.speed);
+            
+            const camPos = new THREE.Vector3(0, 4, -8).applyQuaternion(player.quaternion);
+            camera.position.lerp(player.position.clone().add(camPos), 0.1);
+            camera.lookAt(player.position.clone().add(new THREE.Vector3(0, 1, 0)));
+            
+            slashes.forEach((s, i) => {
+                s.translateZ(0.6);
+                if(s.position.distanceTo(player.position) > 40) { scene.remove(s); slashes.splice(i, 1); }
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
